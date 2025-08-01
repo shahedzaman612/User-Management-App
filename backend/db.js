@@ -1,10 +1,12 @@
 // db.js
 import mysql from "mysql2/promise";
+import dotenv from "dotenv";
 
-// Create and export a MySQL connection
+dotenv.config();
+
 export const db = await mysql.createConnection({
-  host: "localhost", // or '127.0.0.1'
-  user: "root", // replace with your MySQL username
-  password: "shahed", // replace with your MySQL password
-  database: "user_management", // make sure this database exists
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
