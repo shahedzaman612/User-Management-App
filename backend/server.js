@@ -30,7 +30,9 @@ const verifyUser = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const result = await db.query("SELECT * FROM users WHERE id = $1", [decoded.id]);
+    const result = await db.query("SELECT * FROM users WHERE id = $1", [
+      decoded.id,
+    ]);
     if (!result.rows.length)
       return res.clearCookie("token").status(401).json("User not found");
 
@@ -66,7 +68,9 @@ app.post("/api/register", async (req, res) => {
 
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
-  const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+  const result = await db.query("SELECT * FROM users WHERE email = $1", [
+    email,
+  ]);
 
   if (!result.rows.length) return res.status(401).json("Invalid credentials");
 
@@ -76,7 +80,10 @@ app.post("/api/login", async (req, res) => {
 
   if (user.status === "blocked") return res.status(403).json("User is blocked");
 
-  await db.query("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1", [user.id]);
+  await db.query(
+    "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1",
+    [user.id]
+  );
 
   const token = jwt.sign({ id: user.id }, JWT_SECRET);
   res.cookie("token", token, { httpOnly: true }).json("Logged in");
@@ -98,7 +105,10 @@ app.post("/api/users/block", verifyUser, async (req, res) => {
   if (!ids?.length) return res.status(400).json("No IDs");
 
   const placeholders = ids.map((_, i) => `$${i + 1}`).join(",");
-  await db.query(`UPDATE users SET status = 'blocked' WHERE id IN (${placeholders})`, ids);
+  await db.query(
+    `UPDATE users SET status = 'blocked' WHERE id IN (${placeholders})`,
+    ids
+  );
   res.json("Users blocked");
 });
 
@@ -107,7 +117,10 @@ app.post("/api/users/unblock", verifyUser, async (req, res) => {
   if (!ids?.length) return res.status(400).json("No IDs");
 
   const placeholders = ids.map((_, i) => `$${i + 1}`).join(",");
-  await db.query(`UPDATE users SET status = 'active' WHERE id IN (${placeholders})`, ids);
+  await db.query(
+    `UPDATE users SET status = 'active' WHERE id IN (${placeholders})`,
+    ids
+  );
   res.json("Users unblocked");
 });
 
@@ -127,6 +140,9 @@ app.get("/api/check", verifyUser, (req, res) => {
     email: req.user.email,
     status: req.user.status,
   });
+});
+app.get("/", (req, res) => {
+  res.send("Backend is working");
 });
 
 app.listen(PORT, () => {
