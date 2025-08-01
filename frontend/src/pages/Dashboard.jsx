@@ -20,8 +20,9 @@ const Dashboard = () => {
         withCredentials: true,
       });
       setUsers(res.data);
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
-      navigate("/login");
+      navigate("/");
     } finally {
       setLoading(false);
     }
