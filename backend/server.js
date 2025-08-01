@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
-import { db } from "./db.js";
+import db from "./db.js"; // Make sure it's default export, not named export
 
 dotenv.config();
 
@@ -30,13 +30,11 @@ const verifyUser = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const [rows] = await db.execute("SELECT * FROM users WHERE id = ?", [
-      decoded.id,
-    ]);
-    if (!rows.length)
+    const result = await db.query("SELECT * FROM users WHERE id = $1", [decoded.id]);
+    if (!result.rows.length)
       return res.clearCookie("token").status(401).json("User not found");
 
-    const user = rows[0];
+    const user = result.rows[0];
     if (user.status === "blocked") {
       return res.clearCookie("token").status(403).json("User is blocked");
     }
@@ -52,13 +50,13 @@ app.post("/api/register", async (req, res) => {
   const { name, email, password } = req.body;
   try {
     const hash = await bcrypt.hash(password, 10);
-    await db.execute(
-      "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+    await db.query(
+      "INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3)",
       [name, email, hash]
     );
     res.json("Registered");
   } catch (err) {
-    if (err.code === "ER_DUP_ENTRY") {
+    if (err.code === "23505") {
       res.status(400).json("Email already exists");
     } else {
       res.status(500).json("Server error");
@@ -68,21 +66,17 @@ app.post("/api/register", async (req, res) => {
 
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
-  const [rows] = await db.execute("SELECT * FROM users WHERE email = ?", [
-    email,
-  ]);
+  const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
 
-  if (!rows.length) return res.status(401).json("Invalid credentials");
+  if (!result.rows.length) return res.status(401).json("Invalid credentials");
 
-  const user = rows[0];
+  const user = result.rows[0];
   const match = await bcrypt.compare(password, user.password_hash);
   if (!match) return res.status(401).json("Wrong password");
 
   if (user.status === "blocked") return res.status(403).json("User is blocked");
 
-  await db.execute("UPDATE users SET last_login = NOW() WHERE id = ?", [
-    user.id,
-  ]);
+  await db.query("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1", [user.id]);
 
   const token = jwt.sign({ id: user.id }, JWT_SECRET);
   res.cookie("token", token, { httpOnly: true }).json("Logged in");
@@ -93,43 +87,36 @@ app.post("/api/logout", (req, res) => {
 });
 
 app.get("/api/users", verifyUser, async (req, res) => {
-  const [users] = await db.execute(
+  const result = await db.query(
     "SELECT id, name, email, status, last_login, created_at FROM users ORDER BY last_login DESC"
   );
-  res.json(users);
+  res.json(result.rows);
 });
 
 app.post("/api/users/block", verifyUser, async (req, res) => {
   const { ids } = req.body;
   if (!ids?.length) return res.status(400).json("No IDs");
-  await db.query(
-    `UPDATE users SET status = 'blocked' WHERE id IN (${ids
-      .map(() => "?")
-      .join(",")})`,
-    ids
-  );
+
+  const placeholders = ids.map((_, i) => `$${i + 1}`).join(",");
+  await db.query(`UPDATE users SET status = 'blocked' WHERE id IN (${placeholders})`, ids);
   res.json("Users blocked");
 });
 
 app.post("/api/users/unblock", verifyUser, async (req, res) => {
   const { ids } = req.body;
   if (!ids?.length) return res.status(400).json("No IDs");
-  await db.query(
-    `UPDATE users SET status = 'active' WHERE id IN (${ids
-      .map(() => "?")
-      .join(",")})`,
-    ids
-  );
+
+  const placeholders = ids.map((_, i) => `$${i + 1}`).join(",");
+  await db.query(`UPDATE users SET status = 'active' WHERE id IN (${placeholders})`, ids);
   res.json("Users unblocked");
 });
 
 app.post("/api/users/delete", verifyUser, async (req, res) => {
   const { ids } = req.body;
   if (!ids?.length) return res.status(400).json("No IDs");
-  await db.query(
-    `DELETE FROM users WHERE id IN (${ids.map(() => "?").join(",")})`,
-    ids
-  );
+
+  const placeholders = ids.map((_, i) => `$${i + 1}`).join(",");
+  await db.query(`DELETE FROM users WHERE id IN (${placeholders})`, ids);
   res.json("Users deleted");
 });
 
