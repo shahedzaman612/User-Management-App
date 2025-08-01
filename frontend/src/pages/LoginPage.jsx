@@ -13,7 +13,7 @@ const LoginPage = () => {
     setError("");
     try {
       await axios.post(
-        "http://localhost:5000/api/login",
+        `${import.meta.env.VITE_BACKEND_URL}/api/login`,
         { email, password },
         { withCredentials: true }
       );
@@ -33,6 +33,7 @@ const LoginPage = () => {
           <div className="col-xl-10">
             <div className="card rounded-3 text-black shadow">
               <div className="row g-0">
+                {/* Left Form */}
                 <div className="col-lg-6">
                   <div className="card-body p-md-5 mx-md-4">
                     <div className="text-center">
@@ -94,13 +95,14 @@ const LoginPage = () => {
                   </div>
                 </div>
 
+                {/* Right Panel */}
                 <div className="col-lg-6 d-flex align-items-center bg-primary text-white rounded-end">
                   <div className="text-white px-3 py-4 p-md-5 mx-md-4">
                     <h4 className="mb-4">We are more than just a company</h4>
                     <p className="small mb-0">
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit,
-                      sed do eiusmod tempor incididunt ut labore et dolore magna
-                      aliqua.
+                      Join us to access powerful tools, manage your profile, and
+                      connect with others. Creating an account is quick and
+                      easy.
                     </p>
                   </div>
                 </div>
