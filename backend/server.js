@@ -14,19 +14,18 @@ const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || "defaultsecret";
 
 // Middleware
+
 app.use(
- app.use(
   cors({
     origin: [
       "https://managetheuserbd.netlify.app",
       "https://user-management-frontend-tmrj.onrender.com",
-      "http://localhost:5173"
+      "http://localhost:5173",
     ],
     credentials: true,
   })
 );
 
-);
 app.use(express.json());
 app.use(cookieParser());
 
