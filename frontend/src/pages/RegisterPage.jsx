@@ -116,7 +116,7 @@ const RegisterPage = () => {
   );
 };
 
-// Gradient background custom style
+
 const style = document.createElement("style");
 style.innerHTML = `
   .gradient-custom-2 {
