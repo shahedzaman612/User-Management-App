@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -11,18 +11,14 @@ const Dashboard = () => {
   // Fetch users
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/users", {
+      const res = await axios.get("https://user-management-backend-dec0.onrender.com/api/users", {
         withCredentials: true,
       });
       setUsers(res.data);
     } catch (err) {
-      navigate("/login");
+      navigate("/");
     }
   };
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
 
   // Handle selection
   const handleCheckboxChange = (id) => {
@@ -45,7 +41,7 @@ const Dashboard = () => {
     if (!selected.length) return;
     try {
       await axios.post(
-        `http://localhost:5000/api/users/${action}`,
+        `https://user-management-backend-dec0.onrender.com/api/users/${action}`,
         { ids: selected },
         { withCredentials: true }
       );
@@ -60,7 +56,7 @@ const Dashboard = () => {
   // Logout
   const handleLogout = async () => {
     await axios.post(
-      "http://localhost:5000/api/logout",
+      "https://user-management-backend-dec0.onrender.com/api/logout",
       {},
       { withCredentials: true }
     );

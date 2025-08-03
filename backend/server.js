@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
-import db from "./db.js"; // Make sure it's default export, not named export
+import db from "./db.js"; 
 
 dotenv.config();
 
@@ -18,7 +18,6 @@ const JWT_SECRET = process.env.JWT_SECRET || "defaultsecret";
 app.use(
   cors({
     origin: [
-      "https://managetheuserbd.netlify.app",
       "https://user-management-frontend-tmrj.onrender.com",
       "http://localhost:5173",
     ],
