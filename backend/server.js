@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
-import db from "./db.js"; 
+import db from "./db.js";
 
 dotenv.config();
 
