@@ -17,10 +17,10 @@ const JWT_SECRET = process.env.JWT_SECRET || "defaultsecret";
 
 app.use(
   cors({
-    origin: [
-      "https://user-management-frontend-tmrj.onrender.com",
+    origin:
+      process.env.FRONTEND_URL ||
+      process.env.FRONTEND_URL2 ||
       "http://localhost:5173",
-    ],
     credentials: true,
   })
 );
